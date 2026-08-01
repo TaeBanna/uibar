@@ -2,27 +2,24 @@ local MyUI = {}
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 
--- ระบบ Theme เลียนแบบ Rayfield ทำให้แก้สีได้ง่ายจากจุดเดียว
+-- ระบบ Theme ใหม่ สวยขึ้น โทนสีมืด (Dark Mode) ตัดด้วยสีฟ้า (Accent)
 MyUI.Theme = {
-    Background = Color3.fromRGB(30, 30, 30),
-    Topbar = Color3.fromRGB(20, 20, 20),
-    TabListBg = Color3.fromRGB(25, 25, 25),
-    TabButton = Color3.fromRGB(40, 40, 40),
-    TabButtonSelected = Color3.fromRGB(0, 146, 214), -- สีฟ้าคล้ายๆ Rayfield
-    Text = Color3.fromRGB(240, 240, 240),
-    TextDark = Color3.fromRGB(150, 150, 150),
-    ElementBackground = Color3.fromRGB(40, 40, 40),
-    ElementHover = Color3.fromRGB(50, 50, 50),
-    ToggleEnabled = Color3.fromRGB(0, 146, 214),
-    ToggleDisabled = Color3.fromRGB(60, 60, 60),
-    SliderBackground = Color3.fromRGB(60, 60, 60),
-    SliderFill = Color3.fromRGB(0, 146, 214),
+    Background = Color3.fromRGB(20, 20, 25),
+    Topbar = Color3.fromRGB(25, 25, 30),
+    TabListBg = Color3.fromRGB(30, 30, 35),
+    TabButton = Color3.fromRGB(40, 40, 45),
+    Accent = Color3.fromRGB(85, 170, 255), -- สีฟ้าสว่าง
+    Text = Color3.fromRGB(255, 255, 255),
+    TextDark = Color3.fromRGB(160, 160, 170),
+    ElementBackground = Color3.fromRGB(35, 35, 40),
+    ElementHover = Color3.fromRGB(45, 45, 50),
+    Outline = Color3.fromRGB(50, 50, 60), -- เส้นขอบ
+    ToggleDisabled = Color3.fromRGB(50, 50, 60),
 }
 
 function MyUI:CreateWindow(options)
-    local WindowName = options.Name or "My Custom UI"
+    local WindowName = options.Name or "My Premium UI"
     
     if CoreGui:FindFirstChild("MyCustomUI_Screen") then
         CoreGui:FindFirstChild("MyCustomUI_Screen"):Destroy()
@@ -33,46 +30,65 @@ function MyUI:CreateWindow(options)
     ScreenGui.ResetOnSpawn = false
     ScreenGui.Parent = (gethui and gethui()) or CoreGui
 
+    -- =====================================
+    -- วาดหน้าต่างหลัก (MainFrame)
+    -- =====================================
     local MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 500, 0, 350)
-    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
+    MainFrame.Size = UDim2.new(0, 520, 0, 380)
+    MainFrame.Position = UDim2.new(0.5, -260, 0.5, -190)
     MainFrame.BackgroundColor3 = MyUI.Theme.Background
     MainFrame.BorderSizePixel = 0
     MainFrame.Parent = ScreenGui
 
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 8)
+    UICorner.CornerRadius = UDim.new(0, 10) -- ขอบมนขึ้น
     UICorner.Parent = MainFrame
+    
+    -- ใส่เส้นขอบหน้าต่าง (UIStroke) เพื่อความพรีเมียม
+    local MainStroke = Instance.new("UIStroke")
+    MainStroke.Color = MyUI.Theme.Outline
+    MainStroke.Thickness = 1.5
+    MainStroke.Parent = MainFrame
 
     -- แถบ Topbar
     local Topbar = Instance.new("Frame")
-    Topbar.Size = UDim2.new(1, 0, 0, 35)
+    Topbar.Size = UDim2.new(1, 0, 0, 40)
     Topbar.BackgroundColor3 = MyUI.Theme.Topbar
     Topbar.BorderSizePixel = 0
     Topbar.Parent = MainFrame
+    
     local TopbarCorner = Instance.new("UICorner")
-    TopbarCorner.CornerRadius = UDim.new(0, 8)
+    TopbarCorner.CornerRadius = UDim.new(0, 10)
     TopbarCorner.Parent = Topbar
+    
     local CornerRepair = Instance.new("Frame")
-    CornerRepair.Size = UDim2.new(1, 0, 0, 8)
-    CornerRepair.Position = UDim2.new(0, 0, 1, -8)
+    CornerRepair.Size = UDim2.new(1, 0, 0, 10)
+    CornerRepair.Position = UDim2.new(0, 0, 1, -10)
     CornerRepair.BackgroundColor3 = MyUI.Theme.Topbar
     CornerRepair.BorderSizePixel = 0
     CornerRepair.Parent = Topbar
+    
+    -- เส้นกั้นระหว่าง Topbar กับ TabList
+    local TopbarLine = Instance.new("Frame")
+    TopbarLine.Size = UDim2.new(1, 0, 0, 1)
+    TopbarLine.Position = UDim2.new(0, 0, 1, 0)
+    TopbarLine.BackgroundColor3 = MyUI.Theme.Outline
+    TopbarLine.BorderSizePixel = 0
+    TopbarLine.Parent = Topbar
 
     local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Size = UDim2.new(1, -20, 1, 0)
+    TitleLabel.Size = UDim2.new(1, -30, 1, 0)
     TitleLabel.Position = UDim2.new(0, 15, 0, 0)
     TitleLabel.BackgroundTransparency = 1
     TitleLabel.Text = WindowName
     TitleLabel.TextColor3 = MyUI.Theme.Text
-    TitleLabel.TextSize = 15
+    TitleLabel.TextSize = 16
     TitleLabel.Font = Enum.Font.GothamBold
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = Topbar
 
-    -- ระบบลากหน้าต่าง (รองรับ PC และ Mobile)
+    -- ระบบลากหน้าต่าง (Drag)
     local dragging, dragInput, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -96,7 +112,7 @@ function MyUI:CreateWindow(options)
         end
     end)
 
-    -- ระบบย่อ/ขยาย (เปิด/ปิด) UI ด้วยปุ่ม RightControl (สามารถตั้งค่าปุ่มอื่นได้)
+    -- ปุ่มย่อ/ขยาย (ปุ่มลัดคีย์บอร์ด)
     local toggleKey = options.ToggleKey or Enum.KeyCode.RightControl
     UserInputService.InputBegan:Connect(function(input, gameProcessed)
         if not gameProcessed and input.KeyCode == toggleKey then
@@ -104,31 +120,76 @@ function MyUI:CreateWindow(options)
         end
     end)
 
-    -- สร้างปุ่มลอยสำหรับเปิด/ปิด UI (แสดงตลอดเวลา)
+    -- =====================================
+    -- สร้างปุ่มลอยสำหรับเปิด/ปิด UI (Mobile / Toggle Button)
+    -- =====================================
     local MobileBtn = Instance.new("TextButton")
-    MobileBtn.Size = UDim2.new(0, 45, 0, 45)
+    MobileBtn.Size = UDim2.new(0, 50, 0, 50)
     MobileBtn.Position = UDim2.new(0, 20, 0, 20)
     MobileBtn.BackgroundColor3 = MyUI.Theme.Topbar
     MobileBtn.Text = "UI"
-    MobileBtn.TextColor3 = MyUI.Theme.Text
-    MobileBtn.Font = Enum.Font.GothamBold
-    MobileBtn.TextSize = 14
+    MobileBtn.TextColor3 = MyUI.Theme.Accent
+    MobileBtn.Font = Enum.Font.GothamBlack
+    MobileBtn.TextSize = 18
     MobileBtn.Parent = ScreenGui
     
     local MobileCorner = Instance.new("UICorner")
-    MobileCorner.CornerRadius = UDim.new(1, 0)
+    MobileCorner.CornerRadius = UDim.new(1, 0) -- เป็นวงกลม
     MobileCorner.Parent = MobileBtn
     
-    -- ทำให้ปุ่มเปิดปิด UI ได้
-    MobileBtn.MouseButton1Click:Connect(function()
-        MainFrame.Visible = not MainFrame.Visible
+    local MobileStroke = Instance.new("UIStroke")
+    MobileStroke.Color = MyUI.Theme.Outline
+    MobileStroke.Thickness = 2
+    MobileStroke.Parent = MobileBtn
+
+    -- ระบบแยกการ "ลาก (Drag)" กับการ "คลิก (Click)" ของปุ่มลอย
+    local btnDragging = false
+    local btnDragStart
+    local btnStartPos
+    local btnHasMoved = false
+
+    MobileBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            btnDragging = true
+            btnHasMoved = false
+            btnDragStart = input.Position
+            btnStartPos = MobileBtn.Position
+            -- อนิเมชั่นตอนกด
+            TweenService:Create(MobileBtn, TweenInfo.new(0.2), {Size = UDim2.new(0, 45, 0, 45)}):Play()
+        end
     end)
 
-    -- แถบ TabList คล้าย Rayfield
+    UserInputService.InputChanged:Connect(function(input)
+        if btnDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - btnDragStart
+            if delta.Magnitude > 5 then
+                btnHasMoved = true -- ถ้าเลื่อนเกิน 5 pixel ถือว่าลาก ไม่ใช่คลิก
+            end
+            MobileBtn.Position = UDim2.new(btnStartPos.X.Scale, btnStartPos.X.Offset + delta.X, btnStartPos.Y.Scale, btnStartPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if btnDragging then
+                btnDragging = false
+                TweenService:Create(MobileBtn, TweenInfo.new(0.2), {Size = UDim2.new(0, 50, 0, 50)}):Play()
+                
+                if not btnHasMoved then
+                    -- ถ้าไม่ได้ลาก แต่แค่กดคลิก ให้เปิด/ปิด UI
+                    MainFrame.Visible = not MainFrame.Visible
+                end
+            end
+        end
+    end)
+
+    -- =====================================
+    -- แถบ TabList
+    -- =====================================
     local TabList = Instance.new("ScrollingFrame")
     TabList.Name = "TabList"
-    TabList.Size = UDim2.new(1, 0, 0, 35)
-    TabList.Position = UDim2.new(0, 0, 0, 35)
+    TabList.Size = UDim2.new(1, 0, 0, 40)
+    TabList.Position = UDim2.new(0, 0, 0, 40)
     TabList.BackgroundColor3 = MyUI.Theme.TabListBg
     TabList.BorderSizePixel = 0
     TabList.ScrollBarThickness = 0
@@ -136,26 +197,33 @@ function MyUI:CreateWindow(options)
     TabList.ScrollingDirection = Enum.ScrollingDirection.X
     TabList.Parent = MainFrame
 
+    local TabListLine = Instance.new("Frame")
+    TabListLine.Size = UDim2.new(1, 0, 0, 1)
+    TabListLine.Position = UDim2.new(0, 0, 1, 0)
+    TabListLine.BackgroundColor3 = MyUI.Theme.Outline
+    TabListLine.BorderSizePixel = 0
+    TabListLine.Parent = TabList
+
     local TabListLayout = Instance.new("UIListLayout")
     TabListLayout.FillDirection = Enum.FillDirection.Horizontal
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabListLayout.Padding = UDim.new(0, 5)
+    TabListLayout.Padding = UDim.new(0, 8)
     TabListLayout.Parent = TabList
 
     local TabListPadding = Instance.new("UIPadding")
     TabListPadding.PaddingLeft = UDim.new(0, 10)
-    TabListPadding.PaddingTop = UDim.new(0, 5)
+    TabListPadding.PaddingTop = UDim.new(0, 6)
     TabListPadding.Parent = TabList
 
     TabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         TabList.CanvasSize = UDim2.new(0, TabListLayout.AbsoluteContentSize.X + 20, 0, 0)
     end)
 
-    -- พื้นที่แสดง Content ของแต่ละ Tab
+    -- พื้นที่แสดงเนื้อหา
     local ContentContainer = Instance.new("Frame")
     ContentContainer.Name = "ContentContainer"
-    ContentContainer.Size = UDim2.new(1, 0, 1, -70)
-    ContentContainer.Position = UDim2.new(0, 0, 0, 70)
+    ContentContainer.Size = UDim2.new(1, 0, 1, -80)
+    ContentContainer.Position = UDim2.new(0, 0, 0, 80)
     ContentContainer.BackgroundTransparency = 1
     ContentContainer.Parent = MainFrame
 
@@ -165,10 +233,9 @@ function MyUI:CreateWindow(options)
     function WindowObj:CreateTab(tabName)
         local tabName = tabName or "Tab"
         
-        -- สร้างปุ่ม Tab
         local TabButton = Instance.new("TextButton")
-        TabButton.Size = UDim2.new(0, 100, 1, -5)
-        TabButton.BackgroundColor3 = FirstTab and MyUI.Theme.TabButtonSelected or MyUI.Theme.TabButton
+        TabButton.Size = UDim2.new(0, 100, 1, -6)
+        TabButton.BackgroundColor3 = FirstTab and MyUI.Theme.Accent or MyUI.Theme.TabButton
         TabButton.Text = tabName
         TabButton.TextColor3 = MyUI.Theme.Text
         TabButton.Font = Enum.Font.GothamSemibold
@@ -179,39 +246,42 @@ function MyUI:CreateWindow(options)
         TabCorner.CornerRadius = UDim.new(0, 6)
         TabCorner.Parent = TabButton
         
-        -- ปรับขนาดปุ่ม Tab ตามความยาวข้อความอัตโนมัติ
-        TabButton.Size = UDim2.new(0, TabButton.TextBounds.X + 30, 1, -5)
+        TabButton.Size = UDim2.new(0, TabButton.TextBounds.X + 30, 1, -6)
 
-        -- สร้างหน้า (Page) สำหรับ Tab นี้
         local TabPage = Instance.new("ScrollingFrame")
         TabPage.Size = UDim2.new(1, -20, 1, -20)
         TabPage.Position = UDim2.new(0, 10, 0, 10)
         TabPage.BackgroundTransparency = 1
-        TabPage.ScrollBarThickness = 3
+        TabPage.ScrollBarThickness = 2
+        TabPage.ScrollBarImageColor3 = MyUI.Theme.Accent
         TabPage.Visible = FirstTab
         TabPage.Parent = ContentContainer
 
         local PageLayout = Instance.new("UIListLayout")
-        PageLayout.Padding = UDim.new(0, 8)
+        PageLayout.Padding = UDim.new(0, 10)
         PageLayout.SortOrder = Enum.SortOrder.LayoutOrder
         PageLayout.Parent = TabPage
+        
+        -- ระยะห่างขอบ
+        local PagePadding = Instance.new("UIPadding")
+        PagePadding.PaddingLeft = UDim.new(0, 2)
+        PagePadding.PaddingRight = UDim.new(0, 2)
+        PagePadding.PaddingTop = UDim.new(0, 2)
+        PagePadding.PaddingBottom = UDim.new(0, 2)
+        PagePadding.Parent = TabPage
 
         PageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
             TabPage.CanvasSize = UDim2.new(0, 0, 0, PageLayout.AbsoluteContentSize.Y + 10)
         end)
 
-        -- ระบบเปลี่ยน Tab
         TabButton.MouseButton1Click:Connect(function()
-            -- รีเซ็ตสีปุ่ม Tab ทั้งหมด
             for _, btn in ipairs(TabList:GetChildren()) do
                 if btn:IsA("TextButton") then
                     TweenService:Create(btn, TweenInfo.new(0.3), {BackgroundColor3 = MyUI.Theme.TabButton}):Play()
                 end
             end
-            -- ไฮไลท์ปุ่มที่เลือก
-            TweenService:Create(TabButton, TweenInfo.new(0.3), {BackgroundColor3 = MyUI.Theme.TabButtonSelected}):Play()
+            TweenService:Create(TabButton, TweenInfo.new(0.3), {BackgroundColor3 = MyUI.Theme.Accent}):Play()
 
-            -- ซ่อน Page อื่นและแสดง Page ปัจจุบัน
             for _, page in ipairs(ContentContainer:GetChildren()) do
                 if page:IsA("ScrollingFrame") then
                     page.Visible = false
@@ -221,17 +291,17 @@ function MyUI:CreateWindow(options)
         end)
 
         if FirstTab then FirstTab = false end
-
-        -- ฟังก์ชันจัดการสิ่งต่างๆ ใน Tab (เหมือน Rayfield:CreateButton)
         local TabObj = {}
 
-        -- สร้างปุ่ม (Button)
+        -- =====================================
+        -- วาด Button
+        -- =====================================
         function TabObj:CreateButton(options)
             local btnName = options.Name or "Button"
             local callback = options.Callback or function() end
 
             local ButtonFrame = Instance.new("TextButton")
-            ButtonFrame.Size = UDim2.new(1, 0, 0, 35)
+            ButtonFrame.Size = UDim2.new(1, 0, 0, 38)
             ButtonFrame.BackgroundColor3 = MyUI.Theme.ElementBackground
             ButtonFrame.Text = "   " .. btnName
             ButtonFrame.TextColor3 = MyUI.Theme.Text
@@ -243,6 +313,11 @@ function MyUI:CreateWindow(options)
             local BtnCorner = Instance.new("UICorner")
             BtnCorner.CornerRadius = UDim.new(0, 6)
             BtnCorner.Parent = ButtonFrame
+            
+            local BtnStroke = Instance.new("UIStroke")
+            BtnStroke.Color = MyUI.Theme.Outline
+            BtnStroke.Thickness = 1
+            BtnStroke.Parent = ButtonFrame
 
             ButtonFrame.MouseEnter:Connect(function()
                 TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = MyUI.Theme.ElementHover}):Play()
@@ -253,21 +328,22 @@ function MyUI:CreateWindow(options)
 
             ButtonFrame.MouseButton1Click:Connect(function()
                 pcall(callback)
-                -- Click Effect แบบเล็กลงนิดนึงแล้วเด้งกลับ
-                TweenService:Create(ButtonFrame, TweenInfo.new(0.1), {Size = UDim2.new(1, -6, 0, 31)}):Play()
+                TweenService:Create(ButtonFrame, TweenInfo.new(0.1), {Size = UDim2.new(1, -6, 0, 34)}):Play()
                 wait(0.1)
-                TweenService:Create(ButtonFrame, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 35)}):Play()
+                TweenService:Create(ButtonFrame, TweenInfo.new(0.1), {Size = UDim2.new(1, 0, 0, 38)}):Play()
             end)
         end
 
-        -- สร้างสวิตช์เปิดปิด (Toggle)
+        -- =====================================
+        -- วาด Toggle
+        -- =====================================
         function TabObj:CreateToggle(options)
             local tglName = options.Name or "Toggle"
             local callback = options.Callback or function() end
             local state = options.CurrentValue or false
 
             local ToggleFrame = Instance.new("TextButton")
-            ToggleFrame.Size = UDim2.new(1, 0, 0, 35)
+            ToggleFrame.Size = UDim2.new(1, 0, 0, 38)
             ToggleFrame.BackgroundColor3 = MyUI.Theme.ElementBackground
             ToggleFrame.Text = "   " .. tglName
             ToggleFrame.TextColor3 = MyUI.Theme.Text
@@ -279,11 +355,16 @@ function MyUI:CreateWindow(options)
             local TglCorner = Instance.new("UICorner")
             TglCorner.CornerRadius = UDim.new(0, 6)
             TglCorner.Parent = ToggleFrame
+            
+            local TglStroke = Instance.new("UIStroke")
+            TglStroke.Color = MyUI.Theme.Outline
+            TglStroke.Thickness = 1
+            TglStroke.Parent = ToggleFrame
 
             local ToggleCheck = Instance.new("Frame")
-            ToggleCheck.Size = UDim2.new(0, 40, 0, 20)
-            ToggleCheck.Position = UDim2.new(1, -50, 0.5, -10)
-            ToggleCheck.BackgroundColor3 = state and MyUI.Theme.ToggleEnabled or MyUI.Theme.ToggleDisabled
+            ToggleCheck.Size = UDim2.new(0, 42, 0, 22)
+            ToggleCheck.Position = UDim2.new(1, -55, 0.5, -11)
+            ToggleCheck.BackgroundColor3 = state and MyUI.Theme.Accent or MyUI.Theme.ToggleDisabled
             ToggleCheck.Parent = ToggleFrame
 
             local CheckCorner = Instance.new("UICorner")
@@ -292,7 +373,7 @@ function MyUI:CreateWindow(options)
 
             local ToggleCircle = Instance.new("Frame")
             ToggleCircle.Size = UDim2.new(0, 16, 0, 16)
-            ToggleCircle.Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+            ToggleCircle.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
             ToggleCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
             ToggleCircle.Parent = ToggleCheck
 
@@ -304,18 +385,19 @@ function MyUI:CreateWindow(options)
                 state = not state
                 pcall(callback, state)
                 
-                -- อนิเมชั่นสวิตช์เลื่อนแบบสมูท
                 TweenService:Create(ToggleCheck, TweenInfo.new(0.2), {
-                    BackgroundColor3 = state and MyUI.Theme.ToggleEnabled or MyUI.Theme.ToggleDisabled
+                    BackgroundColor3 = state and MyUI.Theme.Accent or MyUI.Theme.ToggleDisabled
                 }):Play()
                 
                 TweenService:Create(ToggleCircle, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-                    Position = state and UDim2.new(1, -18, 0.5, -8) or UDim2.new(0, 2, 0.5, -8)
+                    Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
                 }):Play()
             end)
         end
 
-        -- สร้างแถบเลื่อน (Slider)
+        -- =====================================
+        -- วาด Slider
+        -- =====================================
         function TabObj:CreateSlider(options)
             local sldName = options.Name or "Slider"
             local min = options.Range and options.Range[1] or 0
@@ -324,17 +406,22 @@ function MyUI:CreateWindow(options)
             local callback = options.Callback or function() end
 
             local SliderFrame = Instance.new("Frame")
-            SliderFrame.Size = UDim2.new(1, 0, 0, 45)
+            SliderFrame.Size = UDim2.new(1, 0, 0, 50)
             SliderFrame.BackgroundColor3 = MyUI.Theme.ElementBackground
             SliderFrame.Parent = TabPage
 
             local SldCorner = Instance.new("UICorner")
             SldCorner.CornerRadius = UDim.new(0, 6)
             SldCorner.Parent = SliderFrame
+            
+            local SldStroke = Instance.new("UIStroke")
+            SldStroke.Color = MyUI.Theme.Outline
+            SldStroke.Thickness = 1
+            SldStroke.Parent = SliderFrame
 
             local TitleLabel = Instance.new("TextLabel")
             TitleLabel.Size = UDim2.new(1, -20, 0, 20)
-            TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+            TitleLabel.Position = UDim2.new(0, 10, 0, 8)
             TitleLabel.BackgroundTransparency = 1
             TitleLabel.Text = sldName
             TitleLabel.TextColor3 = MyUI.Theme.Text
@@ -345,19 +432,19 @@ function MyUI:CreateWindow(options)
 
             local ValueLabel = Instance.new("TextLabel")
             ValueLabel.Size = UDim2.new(0, 50, 0, 20)
-            ValueLabel.Position = UDim2.new(1, -60, 0, 5)
+            ValueLabel.Position = UDim2.new(1, -60, 0, 8)
             ValueLabel.BackgroundTransparency = 1
             ValueLabel.Text = tostring(default)
-            ValueLabel.TextColor3 = MyUI.Theme.TextDark
-            ValueLabel.Font = Enum.Font.Gotham
+            ValueLabel.TextColor3 = MyUI.Theme.Accent
+            ValueLabel.Font = Enum.Font.GothamBold
             ValueLabel.TextSize = 14
             ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
             ValueLabel.Parent = SliderFrame
 
             local SliderBar = Instance.new("TextButton")
-            SliderBar.Size = UDim2.new(1, -20, 0, 6)
-            SliderBar.Position = UDim2.new(0, 10, 0, 30)
-            SliderBar.BackgroundColor3 = MyUI.Theme.SliderBackground
+            SliderBar.Size = UDim2.new(1, -20, 0, 8)
+            SliderBar.Position = UDim2.new(0, 10, 0, 32)
+            SliderBar.BackgroundColor3 = MyUI.Theme.ToggleDisabled
             SliderBar.Text = ""
             SliderBar.AutoButtonColor = false
             SliderBar.Parent = SliderFrame
@@ -369,14 +456,13 @@ function MyUI:CreateWindow(options)
             local SliderFill = Instance.new("Frame")
             local startScale = (default - min) / (max - min)
             SliderFill.Size = UDim2.new(startScale, 0, 1, 0)
-            SliderFill.BackgroundColor3 = MyUI.Theme.SliderFill
+            SliderFill.BackgroundColor3 = MyUI.Theme.Accent
             SliderFill.Parent = SliderBar
 
             local FillCorner = Instance.new("UICorner")
             FillCorner.CornerRadius = UDim.new(1, 0)
             FillCorner.Parent = SliderFill
 
-            -- ระบบเลื่อน Slider
             local sliding = false
             local function updateSlider(input)
                 local pos = math.clamp((input.Position.X - SliderBar.AbsolutePosition.X) / SliderBar.AbsoluteSize.X, 0, 1)
@@ -411,42 +497,5 @@ function MyUI:CreateWindow(options)
 
     return WindowObj
 end
-
--- ==========================================
--- วิธีการนำไปใช้งาน (ตัวอย่าง)
--- ==========================================
---[[
-local MyWindow = MyUI:CreateWindow({
-    Name = "My Custom UI (V2 - Rayfield Inspired)",
-    ToggleKey = Enum.KeyCode.RightControl -- เปลี่ยนเป็นปุ่มอื่นได้ เช่น Enum.KeyCode.RightShift
-})
-
-local Tab1 = MyWindow:CreateTab("ฟังก์ชันหลัก")
-local Tab2 = MyWindow:CreateTab("ตั้งค่า")
-
-Tab1:CreateButton({
-    Name = "ปริ้นข้อความ",
-    Callback = function()
-        print("Hello World!")
-    end
-})
-
-Tab1:CreateToggle({
-    Name = "ออโต้ฟาร์ม",
-    CurrentValue = false,
-    Callback = function(state)
-        print("สถานะออโต้ฟาร์ม: ", state)
-    end
-})
-
-Tab2:CreateSlider({
-    Name = "ความเร็ว",
-    Range = {16, 100},
-    CurrentValue = 16,
-    Callback = function(value)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-    end
-})
-]]
 
 return MyUI
