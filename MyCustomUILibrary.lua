@@ -72,10 +72,10 @@ function MyUI:CreateWindow(options)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = Topbar
 
-    -- ระบบลากหน้าต่าง
+    -- ระบบลากหน้าต่าง (รองรับ PC และ Mobile)
     local dragging, dragInput, dragStart, startPos
     Topbar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = MainFrame.Position
@@ -85,7 +85,7 @@ function MyUI:CreateWindow(options)
         end
     end)
     Topbar.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then dragInput = input end
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
     end)
     UserInputService.InputChanged:Connect(function(input)
         if input == dragInput and dragging then
@@ -95,6 +95,36 @@ function MyUI:CreateWindow(options)
             }):Play()
         end
     end)
+
+    -- ระบบย่อ/ขยาย (เปิด/ปิด) UI ด้วยปุ่ม RightControl (สามารถตั้งค่าปุ่มอื่นได้)
+    local toggleKey = options.ToggleKey or Enum.KeyCode.RightControl
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if not gameProcessed and input.KeyCode == toggleKey then
+            MainFrame.Visible = not MainFrame.Visible
+        end
+    end)
+
+    -- สร้างปุ่มลอยสำหรับมือถือ (Mobile Toggle Button)
+    if UserInputService.TouchEnabled then
+        local MobileBtn = Instance.new("TextButton")
+        MobileBtn.Size = UDim2.new(0, 45, 0, 45)
+        MobileBtn.Position = UDim2.new(0, 20, 0, 20)
+        MobileBtn.BackgroundColor3 = MyUI.Theme.Topbar
+        MobileBtn.Text = "UI"
+        MobileBtn.TextColor3 = MyUI.Theme.Text
+        MobileBtn.Font = Enum.Font.GothamBold
+        MobileBtn.TextSize = 14
+        MobileBtn.Parent = ScreenGui
+        
+        local MobileCorner = Instance.new("UICorner")
+        MobileCorner.CornerRadius = UDim.new(1, 0)
+        MobileCorner.Parent = MobileBtn
+        
+        -- ทำให้ปุ่มมือถือเปิดปิด UI ได้
+        MobileBtn.MouseButton1Click:Connect(function()
+            MainFrame.Visible = not MainFrame.Visible
+        end)
+    end
 
     -- แถบ TabList คล้าย Rayfield
     local TabList = Instance.new("ScrollingFrame")
@@ -359,20 +389,20 @@ function MyUI:CreateWindow(options)
             end
 
             SliderBar.InputBegan:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     sliding = true
                     updateSlider(input)
                 end
             end)
 
             UserInputService.InputEnded:Connect(function(input)
-                if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
                     sliding = false
                 end
             end)
 
             UserInputService.InputChanged:Connect(function(input)
-                if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then
+                if sliding and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
                     updateSlider(input)
                 end
             end)
@@ -389,7 +419,8 @@ end
 -- ==========================================
 --[[
 local MyWindow = MyUI:CreateWindow({
-    Name = "My Custom UI (V2 - Rayfield Inspired)"
+    Name = "My Custom UI (V2 - Rayfield Inspired)",
+    ToggleKey = Enum.KeyCode.RightControl -- เปลี่ยนเป็นปุ่มอื่นได้ เช่น Enum.KeyCode.RightShift
 })
 
 local Tab1 = MyWindow:CreateTab("ฟังก์ชันหลัก")
