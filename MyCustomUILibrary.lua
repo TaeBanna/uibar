@@ -104,27 +104,25 @@ function MyUI:CreateWindow(options)
         end
     end)
 
-    -- สร้างปุ่มลอยสำหรับมือถือ (Mobile Toggle Button)
-    if UserInputService.TouchEnabled then
-        local MobileBtn = Instance.new("TextButton")
-        MobileBtn.Size = UDim2.new(0, 45, 0, 45)
-        MobileBtn.Position = UDim2.new(0, 20, 0, 20)
-        MobileBtn.BackgroundColor3 = MyUI.Theme.Topbar
-        MobileBtn.Text = "UI"
-        MobileBtn.TextColor3 = MyUI.Theme.Text
-        MobileBtn.Font = Enum.Font.GothamBold
-        MobileBtn.TextSize = 14
-        MobileBtn.Parent = ScreenGui
-        
-        local MobileCorner = Instance.new("UICorner")
-        MobileCorner.CornerRadius = UDim.new(1, 0)
-        MobileCorner.Parent = MobileBtn
-        
-        -- ทำให้ปุ่มมือถือเปิดปิด UI ได้
-        MobileBtn.MouseButton1Click:Connect(function()
-            MainFrame.Visible = not MainFrame.Visible
-        end)
-    end
+    -- สร้างปุ่มลอยสำหรับเปิด/ปิด UI (แสดงตลอดเวลา)
+    local MobileBtn = Instance.new("TextButton")
+    MobileBtn.Size = UDim2.new(0, 45, 0, 45)
+    MobileBtn.Position = UDim2.new(0, 20, 0, 20)
+    MobileBtn.BackgroundColor3 = MyUI.Theme.Topbar
+    MobileBtn.Text = "UI"
+    MobileBtn.TextColor3 = MyUI.Theme.Text
+    MobileBtn.Font = Enum.Font.GothamBold
+    MobileBtn.TextSize = 14
+    MobileBtn.Parent = ScreenGui
+    
+    local MobileCorner = Instance.new("UICorner")
+    MobileCorner.CornerRadius = UDim.new(1, 0)
+    MobileCorner.Parent = MobileBtn
+    
+    -- ทำให้ปุ่มเปิดปิด UI ได้
+    MobileBtn.MouseButton1Click:Connect(function()
+        MainFrame.Visible = not MainFrame.Visible
+    end)
 
     -- แถบ TabList คล้าย Rayfield
     local TabList = Instance.new("ScrollingFrame")
