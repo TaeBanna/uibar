@@ -477,12 +477,11 @@ function MyUI:CreateWindow(options)
         PagePadding.PaddingBottom = UDim.new(0, 10)
         PagePadding.Parent = TabPage
 
-        PageLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            TabPage.CanvasSize = UDim2.new(0, 0, 0, PageLayout.AbsoluteContentSize.Y + 20)
-        end)
-        TabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-            TabList.CanvasSize = UDim2.new(0, 0, 0, TabListLayout.AbsoluteContentSize.Y + 20)
-        end)
+        TabPage.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        TabPage.CanvasSize = UDim2.new(0, 0, 0, 0)
+        
+        TabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        TabList.CanvasSize = UDim2.new(0, 0, 0, 0)
 
         TabButton.MouseButton1Click:Connect(function()
             for _, btn in ipairs(TabList:GetChildren()) do
