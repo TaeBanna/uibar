@@ -407,11 +407,11 @@ function MyUI:CreateWindow(options)
     TabList.Parent = MainFrame
 
     local TabListLine = Instance.new("Frame")
-    TabListLine.Size = UDim2.new(0, 1, 1, 0)
-    TabListLine.Position = UDim2.new(1, 0, 0, 0)
+    TabListLine.Size = UDim2.new(0, 1, 1, -45)
+    TabListLine.Position = UDim2.new(0, 140, 0, 45)
     TabListLine.BackgroundColor3 = MyUI.Theme.Outline
     TabListLine.BorderSizePixel = 0
-    TabListLine.Parent = TabList
+    TabListLine.Parent = MainFrame
 
     local TabListLayout = Instance.new("UIListLayout")
     TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
