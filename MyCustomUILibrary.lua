@@ -220,12 +220,139 @@ function MyUI:CreateWindow(options)
     CloseBtn.TextSize = 14
     CloseBtn.Parent = Topbar
 
+    -- Confirmation Frame for Closing
+    local ConfirmFrame = Instance.new("Frame")
+    ConfirmFrame.Size = UDim2.new(0, 300, 0, 150)
+    ConfirmFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+    ConfirmFrame.BackgroundColor3 = MyUI.Theme.Background
+    ConfirmFrame.BackgroundTransparency = 1
+    ConfirmFrame.Visible = false
+    ConfirmFrame.ZIndex = 50
+    ConfirmFrame.Parent = ScreenGui
+    CreateCorner(ConfirmFrame, 10)
+    local ConfirmStroke = CreateStroke(ConfirmFrame, MyUI.Theme.Outline, 1)
+    ConfirmStroke.Transparency = 1
+
+    local ConfirmLabel = Instance.new("TextLabel")
+    ConfirmLabel.Size = UDim2.new(1, 0, 0, 60)
+    ConfirmLabel.Position = UDim2.new(0, 0, 0, 10)
+    ConfirmLabel.BackgroundTransparency = 1
+    ConfirmLabel.Text = "Are you sure you want to exit?\nThis will destroy the UI completely."
+    ConfirmLabel.TextColor3 = MyUI.Theme.Text
+    ConfirmLabel.TextTransparency = 1
+    ConfirmLabel.Font = Enum.Font.Gotham
+    ConfirmLabel.TextSize = 14
+    ConfirmLabel.ZIndex = 51
+    ConfirmLabel.Parent = ConfirmFrame
+
+    local YesBtn = Instance.new("TextButton")
+    YesBtn.Size = UDim2.new(0, 100, 0, 35)
+    YesBtn.Position = UDim2.new(0.5, -110, 1, -50)
+    YesBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+    YesBtn.BackgroundTransparency = 1
+    YesBtn.Text = "Yes, Destroy"
+    YesBtn.TextColor3 = Color3.fromRGB(255,255,255)
+    YesBtn.TextTransparency = 1
+    YesBtn.Font = Enum.Font.GothamBold
+    YesBtn.TextSize = 14
+    YesBtn.ZIndex = 51
+    YesBtn.Parent = ConfirmFrame
+    CreateCorner(YesBtn, 6)
+
+    local NoBtn = Instance.new("TextButton")
+    NoBtn.Size = UDim2.new(0, 100, 0, 35)
+    NoBtn.Position = UDim2.new(0.5, 10, 1, -50)
+    NoBtn.BackgroundColor3 = MyUI.Theme.ElementBackground
+    NoBtn.BackgroundTransparency = 1
+    NoBtn.Text = "Cancel"
+    NoBtn.TextColor3 = MyUI.Theme.Text
+    NoBtn.TextTransparency = 1
+    NoBtn.Font = Enum.Font.GothamBold
+    NoBtn.TextSize = 14
+    NoBtn.ZIndex = 51
+    NoBtn.Parent = ConfirmFrame
+    CreateCorner(NoBtn, 6)
+
+    local function ShowConfirm(show)
+        ConfirmFrame.Visible = true
+        local t = show and 0 or 1
+        local scale = show and UDim2.new(0, 300, 0, 150) or UDim2.new(0, 280, 0, 130)
+        Tween(ConfirmFrame, {BackgroundTransparency = t, Size = scale}, 0.2)
+        Tween(ConfirmStroke, {Transparency = t}, 0.2)
+        Tween(ConfirmLabel, {TextTransparency = t}, 0.2)
+        Tween(YesBtn, {BackgroundTransparency = t, TextTransparency = t}, 0.2)
+        Tween(NoBtn, {BackgroundTransparency = t, TextTransparency = t}, 0.2)
+        if not show then
+            task.wait(0.2)
+            ConfirmFrame.Visible = false
+        end
+    end
+
+    YesBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+    NoBtn.MouseButton1Click:Connect(function() ShowConfirm(false) end)
+
     CloseBtn.MouseEnter:Connect(function() Tween(CloseBtn, {TextColor3 = Color3.fromRGB(255, 100, 100)}, 0.2) end)
     CloseBtn.MouseLeave:Connect(function() Tween(CloseBtn, {TextColor3 = MyUI.Theme.TextDark}, 0.2) end)
-    CloseBtn.MouseButton1Click:Connect(function() 
-        Tween(MainFrame, {Size = UDim2.new(0, 560, 0, 0), BackgroundTransparency = 1}, 0.3)
-        task.wait(0.3)
-        MainFrame.Visible = false
+    CloseBtn.MouseButton1Click:Connect(function() ShowConfirm(true) end)
+
+    -- =====================================
+    -- Floating Toggle Button
+    -- =====================================
+    local FloatingBtn = Instance.new("TextButton")
+    FloatingBtn.Name = "FloatingToggle"
+    FloatingBtn.Size = UDim2.new(0, 45, 0, 45)
+    FloatingBtn.Position = UDim2.new(0, 15, 0, 15)
+    FloatingBtn.BackgroundColor3 = MyUI.Theme.Topbar
+    FloatingBtn.BackgroundTransparency = 0.1
+    FloatingBtn.Text = "UI"
+    FloatingBtn.TextColor3 = MyUI.Theme.Accent
+    FloatingBtn.Font = Enum.Font.GothamBold
+    FloatingBtn.TextSize = 16
+    FloatingBtn.Parent = ScreenGui
+    
+    CreateCorner(FloatingBtn, 25) -- Circle
+    CreateStroke(FloatingBtn, MyUI.Theme.Outline, 2)
+
+    -- Make Floating Toggle Draggable
+    local floatDragging = false
+    local floatDragStart = nil
+    local floatStartPos = nil
+    local hasMoved = false
+
+    FloatingBtn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            floatDragging = true
+            hasMoved = false
+            floatDragStart = input.Position
+            floatStartPos = FloatingBtn.Position
+            Tween(FloatingBtn, {Size = UDim2.new(0, 40, 0, 40)}, 0.1)
+        end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if floatDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - floatDragStart
+            if delta.Magnitude > 5 then hasMoved = true end
+            FloatingBtn.Position = UDim2.new(floatStartPos.X.Scale, floatStartPos.X.Offset + delta.X, floatStartPos.Y.Scale, floatStartPos.Y.Offset + delta.Y)
+        end
+    end)
+    UserInputService.InputEnded:Connect(function(input)
+        if floatDragging and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+            floatDragging = false
+            Tween(FloatingBtn, {Size = UDim2.new(0, 45, 0, 45)}, 0.1)
+            if not hasMoved then
+                -- Clicked (not dragged)
+                if MainFrame.Visible then
+                    Tween(MainFrame, {Size = UDim2.new(0, 560, 0, 0), BackgroundTransparency = 1}, 0.3)
+                    task.wait(0.3)
+                    MainFrame.Visible = false
+                else
+                    MainFrame.Visible = true
+                    Tween(MainFrame, {Size = UDim2.new(0, 560, 0, 420), BackgroundTransparency = 0.05}, 0.4, Enum.EasingStyle.Back)
+                end
+            end
+        end
     end)
 
     -- Dragging System
