@@ -290,6 +290,9 @@ function MyUI:CreateWindow(options)
 
     YesBtn.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
+        if type(MyUI.OnDestroy) == "function" then
+            task.spawn(MyUI.OnDestroy)
+        end
     end)
     NoBtn.MouseButton1Click:Connect(function() ShowConfirm(false) end)
 
