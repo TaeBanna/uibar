@@ -397,6 +397,26 @@ function MyUI:CreateWindow(options)
         local TabObj = {}
 
         -- =====================================
+        -- Label
+        -- =====================================
+        function TabObj:CreateLabel(text)
+            local LblFrame = Instance.new("Frame")
+            LblFrame.Size = UDim2.new(1, 0, 0, 25)
+            LblFrame.BackgroundTransparency = 1
+            LblFrame.Parent = TabPage
+
+            local LblText = Instance.new("TextLabel")
+            LblText.Size = UDim2.new(1, 0, 1, 0)
+            LblText.BackgroundTransparency = 1
+            LblText.Text = text
+            LblText.TextColor3 = MyUI.Theme.TextDark
+            LblText.Font = Enum.Font.GothamSemibold
+            LblText.TextSize = 13
+            LblText.TextXAlignment = Enum.TextXAlignment.Left
+            LblText.Parent = LblFrame
+        end
+
+        -- =====================================
         -- Section
         -- =====================================
         function TabObj:CreateSection(sectionName)
