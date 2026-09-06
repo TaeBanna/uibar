@@ -1122,7 +1122,7 @@ function MyUI:CreateWindow(options)
             local dropName = opt.Name or "Dropdown"
             local list = opt.Options or {}
             local multi = opt.MultiSelection == true
-            local current = opt.CurrentOption or (multi and {} or (list[1] or ""))
+            local current = opt.CurrentOption or opt.CurrentValue or (multi and {} or (list[1] or ""))
             if multi and type(current) ~= "table" then
                 current = {current}
             end
