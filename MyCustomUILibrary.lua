@@ -96,7 +96,7 @@ local function CreateStroke(parent, color, thickness)
 end
 
 -- Active dropdown tracker for auto-closing when clicking outside
-local ActiveDropdownClose = nil
+local ActiveDropdownData = nil
 
 -- =====================================
 -- Unload System
@@ -121,7 +121,7 @@ function MyUI:Unload()
         end
     end
     self.Connections = {}
-    ActiveDropdownClose = nil
+    ActiveDropdownData = nil
 
     -- Clean up active UI instances
     if self.CurrentScreenGui and self.CurrentScreenGui.Parent then
@@ -343,6 +343,7 @@ function MyUI:CreateWindow(options)
     dragHandle.Name = "DragHandle"
     dragHandle.Size = UDim2.new(1, -70, 0, 48)
     dragHandle.BackgroundTransparency = 1
+    dragHandle.ZIndex = 5
     dragHandle.Parent = MainFrame
 
     TrackConnection(dragHandle.InputBegan:Connect(function(input)
@@ -371,15 +372,23 @@ function MyUI:CreateWindow(options)
         end
     end))
 
-    -- Auto-close dropdown when clicking outside
+    -- Auto-close dropdown only when clicking outside of the dropdown frame
     TrackConnection(UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if ActiveDropdownClose then
-                task.defer(function()
-                    if ActiveDropdownClose then
-                        ActiveDropdownClose()
+            if ActiveDropdownData then
+                local clickPos = input.Position
+                local frame = ActiveDropdownData.Frame
+                if frame and frame.Parent then
+                    local absPos = frame.AbsolutePosition
+                    local absSize = frame.AbsoluteSize
+                    local isInside = clickPos.X >= absPos.X and clickPos.X <= (absPos.X + absSize.X)
+                                 and clickPos.Y >= absPos.Y and clickPos.Y <= (absPos.Y + absSize.Y)
+                    if not isInside then
+                        ActiveDropdownData.Close()
                     end
-                end)
+                else
+                    ActiveDropdownData.Close()
+                end
             end
         end
     end))
@@ -395,7 +404,7 @@ function MyUI:CreateWindow(options)
             Tween(MainFrame, {Size = UDim2.new(0, 640, 0, 430), BackgroundTransparency = 0.04}, 0.35, Enum.EasingStyle.Back)
             Tween(MainStroke, {Transparency = 0}, 0.25)
         else
-            if ActiveDropdownClose then ActiveDropdownClose() end
+            if ActiveDropdownData then ActiveDropdownData.Close() end
             Tween(MainFrame, {Size = UDim2.new(0, 640, 0, 0), BackgroundTransparency = 1}, 0.25, Enum.EasingStyle.Quad)
             Tween(MainStroke, {Transparency = 1}, 0.2)
             task.delay(0.25, function()
@@ -437,10 +446,12 @@ function MyUI:CreateWindow(options)
 
         -- Dragging for mobile button
         local mDragging = false
+        local mHasMoved = false
         local mDragStart, mStartPos
         TrackConnection(MobilePill.InputBegan:Connect(function(inp)
             if inp.UserInputType == Enum.UserInputType.MouseButton1 or inp.UserInputType == Enum.UserInputType.Touch then
                 mDragging = true
+                mHasMoved = false
                 mDragStart = inp.Position
                 mStartPos = MobilePill.Position
             end
@@ -453,11 +464,18 @@ function MyUI:CreateWindow(options)
         TrackConnection(UserInputService.InputChanged:Connect(function(inp)
             if mDragging and (inp.UserInputType == Enum.UserInputType.MouseMovement or inp.UserInputType == Enum.UserInputType.Touch) then
                 local delta = inp.Position - mDragStart
+                if delta.Magnitude > 4 then
+                    mHasMoved = true
+                end
                 MobilePill.Position = UDim2.new(mStartPos.X.Scale, mStartPos.X.Offset + delta.X, mStartPos.Y.Scale, mStartPos.Y.Offset + delta.Y)
             end
         end))
 
         MobilePill.MouseButton1Click:Connect(function()
+            if mHasMoved then
+                mHasMoved = false
+                return
+            end
             SetUIVisible(not uiToggled)
             Tween(MobilePill, {Size = UDim2.new(0, 38, 0, 38)}, 0.1)
             task.delay(0.1, function()
@@ -553,6 +571,7 @@ function MyUI:CreateWindow(options)
     TopbarControls.Size = UDim2.new(0, 60, 0, 30)
     TopbarControls.Position = UDim2.new(1, -65, 0, 8)
     TopbarControls.BackgroundTransparency = 1
+    TopbarControls.ZIndex = 10
     TopbarControls.Parent = MainFrame
 
     local MinimizeBtn = Instance.new("TextButton")
@@ -680,7 +699,7 @@ function MyUI:CreateWindow(options)
             if CurrentTab.Btn == TabBtn or isSwitching then return end
             isSwitching = true
 
-            if ActiveDropdownClose then ActiveDropdownClose() end
+            if ActiveDropdownData then ActiveDropdownData.Close() end
 
             -- Deactivate previous tab
             Tween(CurrentTab.Btn, {BackgroundTransparency = 1}, 0.2)
@@ -989,17 +1008,37 @@ function MyUI:CreateWindow(options)
             BarBg.Parent = SldFrame
             CreateCorner(BarBg, 3)
 
-            local startPct = math.clamp((val - min) / (max - min), 0, 1)
+            local rangeDelta = max - min
+            local startPct = rangeDelta > 0 and math.clamp((val - min) / rangeDelta, 0, 1) or 0
+
+            local BarBg = Instance.new("TextButton")
+            BarBg.Size = UDim2.new(1, -24, 0, 14)
+            BarBg.Position = UDim2.new(0, 12, 0, 28)
+            BarBg.BackgroundTransparency = 1
+            BarBg.Text = ""
+            BarBg.AutoButtonColor = false
+            BarBg.Parent = SldFrame
+
+            local BarTrack = Instance.new("Frame")
+            BarTrack.Size = UDim2.new(1, 0, 0, 6)
+            BarTrack.Position = UDim2.new(0, 0, 0.5, -3)
+            BarTrack.BackgroundColor3 = Color3.fromRGB(44, 44, 58)
+            BarTrack.BorderSizePixel = 0
+            BarTrack.Parent = BarBg
+            CreateCorner(BarTrack, 3)
+
             local BarFill = Instance.new("Frame")
             BarFill.Size = UDim2.new(startPct, 0, 1, 0)
             BarFill.BackgroundColor3 = MyUI.Theme.Accent
-            BarFill.Parent = BarBg
+            BarFill.BorderSizePixel = 0
+            BarFill.Parent = BarTrack
             CreateCorner(BarFill, 3)
 
             local Knob = Instance.new("Frame")
             Knob.Size = UDim2.new(0, 12, 0, 12)
             Knob.Position = UDim2.new(1, -6, 0.5, -6)
             Knob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+            Knob.BorderSizePixel = 0
             Knob.Parent = BarFill
             CreateCorner(Knob, 6)
 
@@ -1011,9 +1050,9 @@ function MyUI:CreateWindow(options)
             end
 
             local function updateSliderFromInput(inputX)
-                local relX = math.clamp(inputX - BarBg.AbsolutePosition.X, 0, BarBg.AbsoluteSize.X)
-                local pct = relX / BarBg.AbsoluteSize.X
-                local rawVal = min + ((max - min) * pct)
+                local relX = math.clamp(inputX - BarTrack.AbsolutePosition.X, 0, BarTrack.AbsoluteSize.X)
+                local pct = BarTrack.AbsoluteSize.X > 0 and (relX / BarTrack.AbsoluteSize.X) or 0
+                local rawVal = min + (rangeDelta * pct)
                 local steppedVal = math.floor((rawVal / step) + 0.5) * step
                 val = math.clamp(steppedVal, min, max)
 
@@ -1024,7 +1063,7 @@ function MyUI:CreateWindow(options)
                     ValText.Text = tostring(math.floor(val))
                 end
 
-                local cleanPct = (val - min) / (max - min)
+                local cleanPct = rangeDelta > 0 and math.clamp((val - min) / rangeDelta, 0, 1) or 0
                 Tween(BarFill, {Size = UDim2.new(cleanPct, 0, 1, 0)}, 0.08)
                 task.spawn(callback, val)
             end
@@ -1053,7 +1092,7 @@ function MyUI:CreateWindow(options)
                 if num then
                     val = math.clamp(num, min, max)
                     ValText.Text = tostring(val)
-                    local pct = (val - min) / (max - min)
+                    local pct = rangeDelta > 0 and math.clamp((val - min) / rangeDelta, 0, 1) or 0
                     Tween(BarFill, {Size = UDim2.new(pct, 0, 1, 0)}, 0.2)
                     task.spawn(callback, val)
                 else
@@ -1065,7 +1104,7 @@ function MyUI:CreateWindow(options)
             function SliderController:Set(newVal)
                 val = math.clamp(newVal or min, min, max)
                 ValText.Text = tostring(val)
-                local pct = (val - min) / (max - min)
+                local pct = rangeDelta > 0 and math.clamp((val - min) / rangeDelta, 0, 1) or 0
                 Tween(BarFill, {Size = UDim2.new(pct, 0, 1, 0)}, 0.2)
                 task.spawn(callback, val)
             end
@@ -1153,8 +1192,8 @@ function MyUI:CreateWindow(options)
             local function closeDropdown()
                 if not open then return end
                 open = false
-                if ActiveDropdownClose == closeDropdown then
-                    ActiveDropdownClose = nil
+                if ActiveDropdownData and ActiveDropdownData.Close == closeDropdown then
+                    ActiveDropdownData = nil
                 end
                 Tween(Icon, {Rotation = 0}, 0.2)
                 Tween(DropFrame, {Size = UDim2.new(1, 0, 0, 38)}, 0.25, Enum.EasingStyle.Quart)
@@ -1163,10 +1202,10 @@ function MyUI:CreateWindow(options)
             local function toggleDropdown()
                 open = not open
                 if open then
-                    if ActiveDropdownClose and ActiveDropdownClose ~= closeDropdown then
-                        ActiveDropdownClose()
+                    if ActiveDropdownData and ActiveDropdownData.Close ~= closeDropdown then
+                        ActiveDropdownData.Close()
                     end
-                    ActiveDropdownClose = closeDropdown
+                    ActiveDropdownData = { Close = closeDropdown, Frame = DropFrame }
 
                     local count = #list
                     local contentHeight = math.clamp(count * 32, 34, 150)
@@ -1253,7 +1292,17 @@ function MyUI:CreateWindow(options)
                 end
             end
             function DropdownController:Set(newVal)
-                current = newVal
+                if multi then
+                    if type(newVal) == "table" then
+                        current = newVal
+                    elseif newVal ~= nil then
+                        current = {newVal}
+                    else
+                        current = {}
+                    end
+                else
+                    current = newVal ~= nil and newVal or ""
+                end
                 updateTitleDisplay()
                 rebuildList()
                 task.spawn(callback, current)
