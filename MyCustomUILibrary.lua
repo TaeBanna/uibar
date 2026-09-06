@@ -341,7 +341,7 @@ function MyUI:CreateWindow(options)
 
     local dragHandle = Instance.new("Frame")
     dragHandle.Name = "DragHandle"
-    dragHandle.Size = UDim2.new(1, 0, 0, 48)
+    dragHandle.Size = UDim2.new(1, -70, 0, 48)
     dragHandle.BackgroundTransparency = 1
     dragHandle.Parent = MainFrame
 
@@ -362,10 +362,12 @@ function MyUI:CreateWindow(options)
     TrackConnection(UserInputService.InputChanged:Connect(function(input)
         if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             local delta = input.Position - dragStart
-            local vp = workspace.CurrentCamera and workspace.CurrentCamera.ViewportSize or Vector2.new(1920, 1080)
-            local targetX = math.clamp(startPos.X.Offset + delta.X, -MainFrame.AbsoluteSize.X + 80, vp.X - 80)
-            local targetY = math.clamp(startPos.Y.Offset + delta.Y, 10, vp.Y - 50)
-            MainFrame.Position = UDim2.new(startPos.X.Scale, targetX, startPos.Y.Scale, targetY)
+            MainFrame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
         end
     end))
 
